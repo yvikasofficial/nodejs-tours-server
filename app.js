@@ -6,7 +6,10 @@ const userRouter = require('./routes/userRoutes');
 
 const app = express();
 
-app.use(morgan('common'));
+if (process.env.NODE_ENV === 'developement') {
+  app.use(morgan('dev'));
+}
+
 app.use(express.json());
 
 app.use('/api/v1/tours', tourRouter);
