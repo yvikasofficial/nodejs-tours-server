@@ -25,6 +25,10 @@ const tourSchema = new mongoose.Schema(
     difficulty: {
       type: String,
       required: [true, 'A Tour must have a difficulty.'],
+      enum: {
+        values: ['easy', 'medium', 'difficult'],
+        message: 'Difficulty is either : easy, medium, difficult.',
+      },
     },
     ratingAverage: {
       type: Number,
@@ -58,6 +62,10 @@ const tourSchema = new mongoose.Schema(
       default: Date.now(),
       select: false,
     },
+    sceretTour: {
+      type: Boolean,
+      default: false,
+    },
     startDates: [Date],
   },
   {
@@ -70,11 +78,17 @@ tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
 
+//DOCUMENT MIDDLEWARE
 // tourSchema.pre('save', function (next) {
 //   this.slug = slugify(this.name, { lower: true });
 //   next();
 // });
 
+//QUERY MIDDLERWARE
+tourSchema.pre(/^find/, function (next) {
+  this.find({ sceretTour: { $ne: true } });
+  next();
+});
 const Tour = mongoose.model('Tour', tourSchema);
 
 module.exports = Tour;
