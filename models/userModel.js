@@ -19,12 +19,18 @@ const userSchema = new mongoose.Schema({
   photo: {
     type: String,
   },
+  role: {
+    type: String,
+    enum: ['user', 'guide', 'lead-guide', 'admin'],
+    default: 'user',
+  },
   password: {
     type: String,
     minlength: 8,
     required: [true, 'password is required!'],
     select: false,
   },
+
   passwordConfirm: {
     type: String,
     required: [true, 'password is required!'],
@@ -54,7 +60,11 @@ userSchema.methods.correctPassword = async function (
 
 userSchema.methods.changePasswordAfter = function (JWTTimestamp) {
   if (this.passwordChangedAt) {
-    console.log(this.passwordChangedAt, JWTTimestamp);
+    const changedTimeStamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    return JWTTimestamp < changedTimeStamp;
   }
   return false;
 };

@@ -14,7 +14,6 @@ const handleJwtTokenExpiredError = () =>
 
 const handleDuplicateFieldsDB = (err) => {
   const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
-  console.log(value);
 
   const message = `Duplicate field value: ${value}. Please use another value!`;
   return new AppError(message, 400);
@@ -59,22 +58,22 @@ const sendErrorProd = (err, res) => {
 };
 
 module.exports = (err, req, res, next) => {
-  console.log(err);
-
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 
-  // if (process.env.NODE_ENV === 'development') {
-  //   sendErrorDev(err, res);
-  // } else if (process.env.NODE_ENV === 'production') {
-  let error = { ...err };
+  if (process.env.NODE_ENV === 'development') {
+    sendErrorDev(err, res);
+  } else if (process.env.NODE_ENV === 'production') {
+    let error = { ...err };
 
-  if (error.name === 'CastError') error = handleCastErrorDB(error);
-  if (error.code === 11000) error = handleDuplicateFieldsDB(error);
-  if (error.name === 'ValidationError') error = handleValidationErrorDB(error);
-  if (error.name === 'JsonWebTokenError') error = handleJwtError();
-  if (error.name === 'TokenExpiredError') error = handleJwtTokenExpiredError();
+    if (error.name === 'CastError') error = handleCastErrorDB(error);
+    if (error.code === 11000) error = handleDuplicateFieldsDB(error);
+    if (error.name === 'ValidationError')
+      error = handleValidationErrorDB(error);
+    if (error.name === 'JsonWebTokenError') error = handleJwtError();
+    if (error.name === 'TokenExpiredError')
+      error = handleJwtTokenExpiredError();
 
-  sendErrorProd(error, res);
-  // }
+    sendErrorProd(error, res);
+  }
 };
